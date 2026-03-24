@@ -143,6 +143,38 @@
     margin-top: auto;
   }
 
+  .color-set-group {
+    display: flex;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  .color-set-btn {
+    flex: 1;
+    padding: 5px 0;
+    border: 1px solid rgba(0,0,0,0.2);
+    background: transparent;
+    font-family: 'Courier New', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.45);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .color-set-btn.active {
+    background: #1a1a1a;
+    color: #E8E2D3;
+    border-color: #1a1a1a;
+  }
+
+  .color-set-btn:hover:not(.active) {
+    border-color: rgba(0,0,0,0.4);
+    color: rgba(0,0,0,0.7);
+  }
+
   button#regenerate:hover { background: #333; }
   button#regenerate:active { transform: scale(0.98); }
 
@@ -429,6 +461,16 @@
 
   <div class="divider"></div>
 
+  <div class="section">
+    <div class="section-label">Color Set</div>
+    <div class="color-set-group">
+      <button class="color-set-btn" data-set="black">Only black</button>
+      <button class="color-set-btn active" data-set="black-yellow">Black & yellow</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
   <button id="regenerate">↻ &nbsp; Regenerate</button>
 </div>
 
@@ -477,7 +519,8 @@ let params = {
   autoRotate: true,
   threshold: true,
   thresholdVal: 128,
-  resSize: 480
+  resSize: 480,
+  colorSet: 'black-yellow'
 };
 
 function applyResolution() {
@@ -576,12 +619,12 @@ function applyThreshold() {
       if (params.threshold) {
         if (isBlack) {
           if (ns.on) {
-            // Zebra Perlin stripe in yellow
+            // Zebra Perlin stripe
             const nx = (x / w) * ns.scale + noiseTime;
             const ny = (y / h) * ns.scale;
             const n = fbm(nx, ny) * ns.freq * Math.PI * 2;
             const stripe = Math.sin(n * ns.contrast);
-            if (stripe > 0) {
+            if (stripe > 0 && params.colorSet === 'black-yellow') {
               dst[dstIdx]   = YELLOW.r;
               dst[dstIdx+1] = YELLOW.g;
               dst[dstIdx+2] = YELLOW.b;
@@ -892,6 +935,15 @@ document.getElementById('autorotate').addEventListener('change', e => {
 
 document.getElementById('regenerate').addEventListener('click', () => {
   generateSpheres();
+});
+
+// Color set toggle
+document.querySelectorAll('.color-set-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.color-set-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    params.colorSet = btn.dataset.set;
+  });
 });
 
 // Resolution slider (512 = native)
